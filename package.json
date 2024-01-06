@@ -22,8 +22,6 @@
     "paperlib-api": "^0.0.14",
     "prettier": "^3.1.1",
     "prettier-plugin-organize-imports": "^3.2.4",
-    "rollup-plugin-hypothetical": "^2.1.1",
-    "rollup-plugin-ignore": "^1.0.10",
     "rollup-plugin-modify": "^3.0.0",
     "string-similarity": "^4.0.4",
     "typescript": "^5.1.3",
