@@ -1,8 +1,7 @@
+import { PLAPI } from "paperlib-api/api";
+import { PaperEntity } from "paperlib-api/model";
 import path from "path";
 
-import { PaperEntity } from "@/models/paper-entity";
-
-import { PLAPI } from "paperlib";
 import { FileSource, FileSourceRequestType } from "./filesource";
 
 export class UnpayWallFileSource extends FileSource {

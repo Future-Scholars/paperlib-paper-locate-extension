@@ -1,7 +1,7 @@
-import { PLExtension } from "@/models/extension";
-import { PaperEntity } from "@/models/paper-entity";
+import { PLAPI, PLExtAPI, PLExtension } from "paperlib-api/api";
+import { PaperEntity } from "paperlib-api/model";
+
 import { PaperLocateService } from "@/services/paper-locate-service";
-import { PLAPI, PLExtAPI } from "paperlib";
 
 interface IFileSourcePreference {
   type: "boolean";
@@ -10,18 +10,14 @@ interface IFileSourcePreference {
   value: boolean;
 }
 
-class PaperlibMetadataScrapeExtension extends PLExtension {
+class PaperlibPaperLocateExtension extends PLExtension {
   disposeCallbacks: (() => void)[];
 
   private readonly _paperLocateService: PaperLocateService;
 
   constructor() {
     super({
-      id: "paperlib-paper-locate-extension",
-      name: "Paper Locator",
-      description:
-        "This extension is for locating paper files on internet for Paperlib",
-      author: "Paperlib",
+      id: "@future-scholars/paperlib-paper-locate-extension",
       defaultPreference: {
         "filesource-arxiv": {
           type: "boolean",
@@ -59,7 +55,7 @@ class PaperlibMetadataScrapeExtension extends PLExtension {
     );
 
     this.disposeCallbacks.push(
-      PLAPI.hookService.hook("locateFile", this.id, "locateFile"),
+      PLAPI.hookService.hookModify("locateFile", this.id, "locateFile"),
     );
   }
 
@@ -75,15 +71,15 @@ class PaperlibMetadataScrapeExtension extends PLExtension {
     if (paperEntityDrafts.length === 0) {
       console.timeEnd("locateFile");
 
-      return [];
+      return paperEntityDrafts;
     }
 
     const fileSources: string[] = [];
-    const filesourcePref: Record<string, IFileSourcePreference>[] =
+    const filesourcePref: Map<string, IFileSourcePreference> =
       PLExtAPI.extensionPreferenceService.getAll(this.id);
 
-    for (const [id, pref] of Object.entries(filesourcePref)) {
-      if (pref.value && id.startsWith("filesource-")) {
+    for (const [id, enable] of filesourcePref.entries()) {
+      if (enable && id.startsWith("filesource-")) {
         fileSources.push(id.replace("filesource-", ""));
       }
     }
@@ -98,7 +94,7 @@ class PaperlibMetadataScrapeExtension extends PLExtension {
           }
         })
         .map((paperEntityDraft) => {
-          return new PaperEntity(false).initialize(paperEntityDraft);
+          return new PaperEntity(paperEntityDraft, false);
         }),
       fileSources,
     );
@@ -109,7 +105,7 @@ class PaperlibMetadataScrapeExtension extends PLExtension {
 }
 
 async function initialize() {
-  const extension = new PaperlibMetadataScrapeExtension();
+  const extension = new PaperlibPaperLocateExtension();
   await extension.initialize();
 
   return extension;

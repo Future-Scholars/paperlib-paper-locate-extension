@@ -1,9 +1,9 @@
 import stringSimilarity from "string-similarity";
 
-import { PaperEntity } from "@/models/paper-entity";
-import { formatString } from "@/utils/string";
+import { PLAPI } from "paperlib-api/api";
+import { PaperEntity } from "paperlib-api/model";
+import { stringUtils } from "paperlib-api/utils";
 
-import { PLAPI } from "paperlib";
 import { FileSource, FileSourceRequestType } from "./filesource";
 
 export class SemanticScholarFileSource extends FileSource {
@@ -25,7 +25,7 @@ export class SemanticScholarFileSource extends FileSource {
         paperEntityDraft.arxiv.toLowerCase().replace("arxiv:", "").split("v")[0]
       }?fields=title,isOpenAccess,openAccessPdf`;
     } else {
-      queryUrl = `https://api.semanticscholar.org/graph/v1/paper/search?query=${formatString(
+      queryUrl = `https://api.semanticscholar.org/graph/v1/paper/search?query=${stringUtils.formatString(
         {
           str: paperEntityDraft.title,
           whiteSymbol: true,
@@ -42,9 +42,22 @@ export class SemanticScholarFileSource extends FileSource {
     headers: Record<string, string>,
     paperEntityDraft: PaperEntity | null,
   ): Promise<string> {
-    const response = (await PLAPI.networkTool.get(queryUrl, headers, 0)) as {
-      body: string;
-    };
+    let response: { body: string };
+    try {
+      response = (await PLAPI.networkTool.get(queryUrl, headers, 0)) as {
+        body: string;
+      };
+    } catch (error) {
+      if (
+        (error as Error).name === "HTTPError" &&
+        (error as Error).message === "Response code 404 (Not Found)"
+      ) {
+        return "";
+      } else {
+        throw error;
+      }
+    }
+
     const parsedResponse = JSON.parse(response.body) as
       | {
           data: {
@@ -77,14 +90,14 @@ export class SemanticScholarFileSource extends FileSource {
     }
 
     for (const item of itemList) {
-      const plainHitTitle = formatString({
+      const plainHitTitle = stringUtils.formatString({
         str: item.title,
         removeStr: "&amp;",
         removeSymbol: true,
         lowercased: true,
       });
 
-      const existTitle = formatString({
+      const existTitle = stringUtils.formatString({
         str: paperEntityDraft!.title,
         removeStr: "&amp;",
         removeSymbol: true,

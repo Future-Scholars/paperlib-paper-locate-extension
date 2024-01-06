@@ -1,10 +1,11 @@
+import { PLAPI } from "paperlib-api/api";
+import { PaperEntity } from "paperlib-api/model";
+import { chunkRun } from "paperlib-api/utils";
+
 import { ArXivFileSource } from "@/filesources/arxiv";
 import { FileSource } from "@/filesources/filesource";
 import { SemanticScholarFileSource } from "@/filesources/semanticscholar";
 import { UnpayWallFileSource } from "@/filesources/unpaywall";
-import { PaperEntity } from "@/models/paper-entity";
-import { chunkRun } from "@/utils/chunk";
-import { PLAPI } from "paperlib";
 
 const FILESOURCE_OBJS = new Map<string, typeof FileSource>([
   ["arxiv", ArXivFileSource],
@@ -19,8 +20,8 @@ export class PaperLocateService {
     paperEntityDrafts: PaperEntity[],
     fileSources: string[],
   ): Promise<PaperEntity[]> {
-    console.log(fileSources);
     const { results: updatedPaperEntities, errors } = await chunkRun<
+      PaperEntity,
       PaperEntity,
       PaperEntity
     >(
@@ -36,18 +37,19 @@ export class PaperLocateService {
               break;
             }
           } catch (error) {
-            PLAPI.logService.error(
-              "Failed to locate paper",
-              error as Error,
+            PLAPI.logService.warn(
+              `Failed to locate paper with ${fileSource}.`,
+              `${(error as Error).name} - ${(error as Error).message}`,
               true,
-              "PaperLocator",
+              "PaperLocateExt",
             );
           }
         }
 
-        return { paperEntityDraft: entityDraftOrNull, errors };
-
-        return { paperEntityDraft: paperEntityDraft, errors };
+        return {
+          paperEntityDraft: entityDraftOrNull || paperEntityDraft,
+          errors,
+        };
       },
       async (paperEntityDraft: PaperEntity) => {
         return paperEntityDraft;

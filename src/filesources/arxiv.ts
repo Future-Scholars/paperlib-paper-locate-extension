@@ -1,4 +1,4 @@
-import { PaperEntity } from "@/models/paper-entity";
+import { PaperEntity } from "paperlib-api/model";
 
 import { FileSource, FileSourceRequestType } from "./filesource";
 

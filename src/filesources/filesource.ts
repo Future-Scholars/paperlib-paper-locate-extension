@@ -1,5 +1,5 @@
-import { PaperEntity } from "@/models/paper-entity";
-import { PLAPI } from "paperlib";
+import { PLAPI } from "paperlib-api/api";
+import { PaperEntity } from "paperlib-api/model";
 
 export interface FileSourceRequestType {
   queryUrl: string;
