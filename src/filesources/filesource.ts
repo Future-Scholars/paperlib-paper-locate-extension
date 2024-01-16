@@ -1,4 +1,4 @@
-import { PLAPI } from "paperlib-api/api";
+import { PLExtAPI } from "paperlib-api/api";
 import { PaperEntity } from "paperlib-api/model";
 
 export interface FileSourceRequestType {
@@ -22,7 +22,9 @@ export abstract class FileSource {
       paperEntityDraft,
     );
     if (downloadUrl) {
-      const downloadedUrl = await PLAPI.networkTool.downloadPDFs([downloadUrl]);
+      const downloadedUrl = await PLExtAPI.networkTool.downloadPDFs([
+        downloadUrl,
+      ]);
 
       if (downloadedUrl.length > 0) {
         paperEntityDraft.mainURL = downloadedUrl[0];

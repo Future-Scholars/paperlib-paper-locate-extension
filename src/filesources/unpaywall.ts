@@ -1,4 +1,4 @@
-import { PLAPI } from "paperlib-api/api";
+import { PLExtAPI } from "paperlib-api/api";
 import { PaperEntity } from "paperlib-api/model";
 import path from "path";
 
@@ -40,10 +40,15 @@ export class UnpayWallFileSource extends FileSource {
     headers: Record<string, string>,
     paperEntityDraft: PaperEntity | null,
   ): Promise<string> {
-    const response = (await PLAPI.networkTool.get(queryUrl, headers, 0)) as {
-      body: string;
-    };
-    const responseBody = JSON.parse(response.body);
+    const response = await PLExtAPI.networkTool.get(
+      queryUrl,
+      headers,
+      1,
+      10000,
+      false,
+      true,
+    );
+    const responseBody = response.body;
 
     let downloadUrl = "";
     if (responseBody.best_oa_location) {

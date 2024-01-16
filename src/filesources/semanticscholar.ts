@@ -1,6 +1,6 @@
 import stringSimilarity from "string-similarity";
 
-import { PLAPI } from "paperlib-api/api";
+import { PLExtAPI } from "paperlib-api/api";
 import { PaperEntity } from "paperlib-api/model";
 import { stringUtils } from "paperlib-api/utils";
 
@@ -42,11 +42,16 @@ export class SemanticScholarFileSource extends FileSource {
     headers: Record<string, string>,
     paperEntityDraft: PaperEntity | null,
   ): Promise<string> {
-    let response: { body: string };
+    let response;
     try {
-      response = (await PLAPI.networkTool.get(queryUrl, headers, 0)) as {
-        body: string;
-      };
+      response = await PLExtAPI.networkTool.get(
+        queryUrl,
+        headers,
+        1,
+        10000,
+        false,
+        true,
+      );
     } catch (error) {
       if (
         (error as Error).name === "HTTPError" &&
@@ -58,7 +63,7 @@ export class SemanticScholarFileSource extends FileSource {
       }
     }
 
-    const parsedResponse = JSON.parse(response.body) as
+    const parsedResponse = response.body as
       | {
           data: {
             title: string;
